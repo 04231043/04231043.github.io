@@ -26,20 +26,20 @@
         }
         #pdf-viewer {
             width: 100%;
-            height: 100vh; /* Full height */
+            height: 100vh;
             overflow: hidden;
             position: relative;
-        }
-        canvas {
-            display: block;
-            margin: auto;
         }
         #pdf-controls {
             margin-top: 10px;
         }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
         #fallback-link {
             margin-top: 10px;
-            display: block;
         }
         #pdf-error {
             display: none;
@@ -80,18 +80,17 @@
         var pdfDoc = null;
         var pageNumber = 1;
         var scale = 1;
-        var zoomFactor = 0.5; // Factor for zoom in/out
+        var zoomFactor = 0.5;
 
         function renderPage(num) {
             pdfDoc.getPage(num).then(function(page) {
                 var viewport = page.getViewport({ scale: scale });
-
                 var canvas = document.createElement('canvas');
                 var context = canvas.getContext('2d');
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                pdfViewer.innerHTML = ''; // Clear previous content
+                pdfViewer.innerHTML = '';
                 pdfViewer.appendChild(canvas);
 
                 var renderContext = {
@@ -133,7 +132,7 @@
         });
 
         document.getElementById('zoom-out').addEventListener('click', function() {
-            if (scale > zoomFactor) { // Prevent scale from going below 0
+            if (scale > zoomFactor) {
                 scale -= zoomFactor;
                 renderPage(pageNumber);
             }
