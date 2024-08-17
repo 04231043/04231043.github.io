@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /private/
 Allow: /
-Sitemap: https://username.github.io/repository-name/sitemap.xml
+Sitemap: https://github.com/04231043/04231043.github.io/sitemap.xml
