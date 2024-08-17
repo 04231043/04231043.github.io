@@ -19,21 +19,20 @@
             min-height: 100vh;
             margin: 0;
         }
-        .container {
-            text-align: center;
-            width: 100%;
-            max-width: 1200px;
-        }
         #pdf-viewer {
             width: 100%;
+            max-width: 1200px; /* Adjust based on your design */
             height: 80vh; /* Adjust as needed */
-            overflow: hidden;
             position: relative;
+            overflow: auto; /* Enable scrolling */
+        }
+        #pdf-canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
         }
         #pdf-controls {
-            margin-top: 10px;
-        }
-        #fallback-link {
             margin-top: 10px;
         }
         #pdf-error {
@@ -44,16 +43,18 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="container text-center">
         <h1 class="my-4">Jawaban Matrikulasi</h1>
-        <div id="pdf-viewer">
-            <div id="pdf-controls">
+        <div id="pdf-viewer" class="d-flex flex-column">
+            <div id="pdf-controls" class="mb-2">
                 <button id="prev-page" class="btn btn-primary">Previous Page</button>
                 <button id="next-page" class="btn btn-primary">Next Page</button>
                 <button id="zoom-in" class="btn btn-secondary">Zoom In</button>
                 <button id="zoom-out" class="btn btn-secondary">Zoom Out</button>
             </div>
-            <div id="pdf-canvas-container"></div>
+            <div id="pdf-canvas-container">
+                <!-- PDF canvas will be inserted here -->
+            </div>
         </div>
         <div id="fallback-link">
             <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
