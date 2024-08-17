@@ -21,29 +21,18 @@
         }
         .container {
             text-align: center;
-        }
-        .pdf-container {
-            border: 1px solid #dee2e6;
-            background-color: #fff;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-            margin: 20px auto;
-            padding: 10px;
-            position: relative;
             width: 100%;
-            max-width: 800px; /* Atur lebar maksimal sesuai kebutuhan */
+            max-width: 1200px;
         }
         #pdf-viewer {
             width: 100%;
-            height: 600px;
-            overflow: auto;
-            border: 1px solid #dee2e6;
-            background-color: #fff;
+            height: 100vh; /* Full height */
+            overflow: hidden;
             position: relative;
         }
-        .page {
-            width: 100%;
-            border-bottom: 1px solid #dee2e6;
-            margin-bottom: 10px;
+        canvas {
+            display: block;
+            margin: auto;
         }
         #pdf-controls {
             margin-top: 10px;
@@ -66,6 +55,8 @@
         <div id="pdf-controls">
             <button id="prev-page" class="btn btn-primary">Previous Page</button>
             <button id="next-page" class="btn btn-primary">Next Page</button>
+            <button id="zoom-in" class="btn btn-secondary">Zoom In</button>
+            <button id="zoom-out" class="btn btn-secondary">Zoom Out</button>
         </div>
         <div id="fallback-link">
             <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
@@ -88,7 +79,8 @@
         var pdfViewer = document.getElementById('pdf-viewer');
         var pdfDoc = null;
         var pageNumber = 1;
-        var scale = 1.5;
+        var scale = 1;
+        var zoomFactor = 0.5; // Factor for zoom in/out
 
         function renderPage(num) {
             pdfDoc.getPage(num).then(function(page) {
@@ -99,11 +91,8 @@
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                var pageDiv = document.createElement('div');
-                pageDiv.className = 'page';
-                pageDiv.appendChild(canvas);
                 pdfViewer.innerHTML = ''; // Clear previous content
-                pdfViewer.appendChild(pageDiv);
+                pdfViewer.appendChild(canvas);
 
                 var renderContext = {
                     canvasContext: context,
@@ -134,6 +123,18 @@
         document.getElementById('next-page').addEventListener('click', function() {
             if (pdfDoc && pageNumber < pdfDoc.numPages) {
                 pageNumber++;
+                renderPage(pageNumber);
+            }
+        });
+
+        document.getElementById('zoom-in').addEventListener('click', function() {
+            scale += zoomFactor;
+            renderPage(pageNumber);
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', function() {
+            if (scale > zoomFactor) { // Prevent scale from going below 0
+                scale -= zoomFactor;
                 renderPage(pageNumber);
             }
         });
