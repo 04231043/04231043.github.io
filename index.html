@@ -25,19 +25,24 @@
             margin-bottom: 10px;
         }
         #fallback-link {
-            display: none;
             margin-top: 10px;
+            display: block;
+        }
+        #pdf-error {
+            display: none;
+            color: red;
         }
     </style>
 </head>
 <body>
 
     <div class="container text-center">
-        <h1 class="my-4">My PDF Document</h1>
+        <h1 class="my-4">Jawaban Matrikulasi</h1>
         <div class="pdf-container embed-responsive embed-responsive-16by9">
             <embed id="pdf-embed" class="embed-responsive-item" src="tests.pdf" type="application/pdf">
         </div>
         <div id="fallback-link">
+            <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
             <p>If the PDF does not load, you can <a href="tests.pdf" download>download the PDF here</a>.</p>
         </div>
     </div>
@@ -52,7 +57,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             var pdfEmbed = document.getElementById('pdf-embed');
             pdfEmbed.onerror = function() {
-                document.getElementById('fallback-link').style.display = 'block';
+                document.getElementById('pdf-error').style.display = 'block';
             };
         });
     </script>
