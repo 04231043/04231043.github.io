@@ -77,7 +77,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             var url = 'tests.pdf'; // URL file PDF kamu
             var pdfjsLib = window['pdfjs-dist/build/pdf'];
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.mjs';
 
             var loadingTask = pdfjsLib.getDocument(url);
             loadingTask.promise.then(function(pdf) {
