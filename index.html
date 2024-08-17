@@ -26,7 +26,12 @@
         }
         #pdf-viewer {
             width: 100%;
-            height: 100vh;
+            height: 80vh; /* Adjust as needed */
+            overflow: hidden;
+            position: relative;
+        }
+        #pdf-controls {
+            margin-top: 10px;
         }
         #fallback-link {
             margin-top: 10px;
@@ -42,7 +47,13 @@
     <div class="container">
         <h1 class="my-4">Jawaban Matrikulasi</h1>
         <div id="pdf-viewer">
-            <iframe id="pdf-frame" src="" style="width:100%; height:100%; border:none;"></iframe>
+            <div id="pdf-controls">
+                <button id="prev-page" class="btn btn-primary">Previous Page</button>
+                <button id="next-page" class="btn btn-primary">Next Page</button>
+                <button id="zoom-in" class="btn btn-secondary">Zoom In</button>
+                <button id="zoom-out" class="btn btn-secondary">Zoom Out</button>
+            </div>
+            <div id="pdf-canvas-container"></div>
         </div>
         <div id="fallback-link">
             <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
@@ -60,15 +71,93 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf_viewer.min.js"></script>
     <script>
         var url = 'tests.pdf';
-        var pdfViewerContainer = document.getElementById('pdf-viewer');
-        var pdfFrame = document.getElementById('pdf-frame');
+        var pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.worker.min.js';
+        
+        var pdfDoc = null;
+        var pageNum = 1;
+        var pageRendering = false;
+        var pageNumPending = null;
+        var scale = 1.5;
+        var zoomFactor = 0.5; // Factor for zoom in/out
+
+        var pdfViewerContainer = document.getElementById('pdf-canvas-container');
+
+        function renderPage(num) {
+            pageRendering = true;
+
+            pdfDoc.getPage(num).then(function(page) {
+                var viewport = page.getViewport({ scale: scale });
+
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                pdfViewerContainer.innerHTML = ''; // Clear previous content
+                pdfViewerContainer.appendChild(canvas);
+
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+        }
+
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
 
         function loadPDF() {
-            pdfFrame.src = 'https://docs.google.com/gview?url=' + encodeURIComponent(url);
-            pdfFrame.onerror = function() {
+            var loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(function(pdf) {
+                pdfDoc = pdf;
+                document.getElementById('pdf-error').style.display = 'none';
+                renderPage(pageNum);
+            }).catch(function(error) {
+                console.error(error);
                 document.getElementById('pdf-error').style.display = 'block';
-            };
+            });
         }
+
+        document.getElementById('prev-page').addEventListener('click', function() {
+            if (pdfDoc && pageNum > 1) {
+                pageNum--;
+                queueRenderPage(pageNum);
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', function() {
+            if (pdfDoc && pageNum < pdfDoc.numPages) {
+                pageNum++;
+                queueRenderPage(pageNum);
+            }
+        });
+
+        document.getElementById('zoom-in').addEventListener('click', function() {
+            scale += zoomFactor;
+            queueRenderPage(pageNum);
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', function() {
+            if (scale > zoomFactor) {
+                scale -= zoomFactor;
+                queueRenderPage(pageNum);
+            }
+        });
 
         document.addEventListener("DOMContentLoaded", loadPDF);
     </script>
