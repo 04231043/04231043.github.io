@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="This page displays a PDF document on GitHub Pages.">
-    <meta name="keywords" content="PDF, GitHub Pages, document, view PDF online, Jawaban Matrikulasi ITK 2024">
+    <meta name="description" content="This page displays a PDF document using PDF.js.">
+    <meta name="keywords" content="PDF, PDF.js, GitHub Pages, view PDF online">
     <meta name="author" content="Your Name">
     <title>Jawaban Matrikulasi ITK</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
     <style>
         body {
             background-color: #f8f9fa;
@@ -23,10 +24,10 @@
             background-color: #fff;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             margin-bottom: 10px;
-        }
-        #fallback-link {
-            margin-top: 10px;
-            display: block;
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            overflow: auto;
         }
         #pdf-error {
             display: none;
@@ -38,30 +39,62 @@
 
     <div class="container text-center">
         <h1 class="my-4">Jawaban Matrikulasi</h1>
-        <div class="pdf-container embed-responsive embed-responsive-16by9">
-            <embed id="pdf-embed" class="embed-responsive-item" src="tests.pdf" type="application/pdf">
-        </div>
-        <div id="fallback-link">
-            <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
-            <p>If the PDF does not load, you can <a href="tests.pdf" download>download the PDF here</a>.</p>
-        </div>
+        <div id="pdf-container" class="pdf-container"></div>
+        <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
     </div>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+    
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <!-- Custom JS for PDF handling -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var pdfEmbed = document.getElementById('pdf-embed');
-            pdfEmbed.onerror = function() {
-                document.getElementById('pdf-error').style.display = 'block';
-            };
+            var url = 'tests.pdf';
+            var pdfContainer = document.getElementById('pdf-container');
+            var pdfError = document.getElementById('pdf-error');
+
+            // Load the PDF document
+            pdfjsLib.getDocument(url).promise.then(function(pdf) {
+                console.log('PDF loaded');
+
+                // Fetch the first page
+                pdf.getPage(1).then(function(page) {
+                    console.log('Page loaded');
+                    var scale = 1.5;
+                    var viewport = page.getViewport({ scale: scale });
+
+                    // Create a canvas element
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    // Append the canvas to the container
+                    pdfContainer.appendChild(canvas);
+
+                    // Render the page
+                    var renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    page.render(renderContext).promise.then(function() {
+                        console.log('Page rendered');
+                    }).catch(function() {
+                        pdfError.style.display = 'block';
+                    });
+                }).catch(function() {
+                    pdfError.style.display = 'block';
+                });
+            }).catch(function() {
+                pdfError.style.display = 'block';
+            });
         });
     </script>
-    
+
 </body>
 <footer class="text-center mt-4">
     <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">
