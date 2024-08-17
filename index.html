@@ -29,6 +29,8 @@
             margin: 20px auto;
             padding: 10px;
             position: relative;
+            width: 100%;
+            max-width: 800px; /* Atur lebar maksimal sesuai kebutuhan */
         }
         #pdf-viewer {
             width: 100%;
@@ -36,6 +38,7 @@
             overflow: auto;
             border: 1px solid #dee2e6;
             background-color: #fff;
+            position: relative;
         }
         .page {
             width: 100%;
@@ -84,10 +87,11 @@
 
         var pdfViewer = document.getElementById('pdf-viewer');
         var pdfDoc = null;
+        var pageNumber = 1;
+        var scale = 1.5;
 
         function renderPage(num) {
             pdfDoc.getPage(num).then(function(page) {
-                var scale = 1.5;
                 var viewport = page.getViewport({ scale: scale });
 
                 var canvas = document.createElement('canvas');
@@ -98,6 +102,7 @@
                 var pageDiv = document.createElement('div');
                 pageDiv.className = 'page';
                 pageDiv.appendChild(canvas);
+                pdfViewer.innerHTML = ''; // Clear previous content
                 pdfViewer.appendChild(pageDiv);
 
                 var renderContext = {
@@ -112,10 +117,7 @@
             var loadingTask = pdfjsLib.getDocument(url);
             loadingTask.promise.then(function(pdf) {
                 pdfDoc = pdf;
-                pdfViewer.innerHTML = '';
-                for (var i = 1; i <= pdf.numPages; i++) {
-                    renderPage(i);
-                }
+                renderPage(pageNumber);
             }).catch(function(error) {
                 console.error(error);
                 document.getElementById('pdf-error').style.display = 'block';
@@ -123,16 +125,16 @@
         }
 
         document.getElementById('prev-page').addEventListener('click', function() {
-            if (pageNumber > 1) {
+            if (pdfDoc && pageNumber > 1) {
                 pageNumber--;
-                loadPDF();
+                renderPage(pageNumber);
             }
         });
 
         document.getElementById('next-page').addEventListener('click', function() {
-            if (pageNumber < pdfDoc.numPages) {
+            if (pdfDoc && pageNumber < pdfDoc.numPages) {
                 pageNumber++;
-                loadPDF();
+                renderPage(pageNumber);
             }
         });
 
