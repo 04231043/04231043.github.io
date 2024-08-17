@@ -28,7 +28,6 @@
         }
         #fallback-link {
             margin-top: 10px;
-            display: block;
         }
         #pdf-error {
             display: none;
@@ -42,10 +41,14 @@
 </head>
 <body>
 
-    <div class="container text-center">
+    <div class="container-fluid text-center">
         <h1 class="my-4">Jawaban Matrikulasi</h1>
-        <div class="pdf-container">
-            <iframe id="pdf-iframe" src="https://docs.google.com/viewer?url=https://04231043.github.io/tests.pdf&embedded=true" frameborder="0"></iframe>
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="pdf-container embed-responsive embed-responsive-16by9">
+                    <iframe id="pdf-iframe" src="https://docs.google.com/viewer?url=YOUR_PDF_URL&embedded=true" frameborder="0"></iframe>
+                </div>
+            </div>
         </div>
         <div id="fallback-link">
             <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
@@ -61,7 +64,6 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             var pdfIframe = document.getElementById('pdf-iframe');
-            // Check if the iframe content loads properly
             pdfIframe.onload = function() {
                 document.getElementById('pdf-error').style.display = 'none';
             };
