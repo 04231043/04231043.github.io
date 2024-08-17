@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /private/
 Allow: /
-Sitemap: https://github.com/04231043/04231043.github.io/blob/main/sitemap.xml
+Sitemap: https://04231043.github.io/sitemap.xml
