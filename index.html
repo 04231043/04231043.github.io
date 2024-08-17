@@ -23,10 +23,15 @@
             background-color: #fff;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             margin-bottom: 10px;
+            width: 100%;
+            max-width: 800px;
         }
         #fallback-link {
+            display: none;
             margin-top: 10px;
-            display: block;
+        }
+        #pdf-viewer {
+            width: 100%;
         }
         #pdf-error {
             display: none;
@@ -38,12 +43,11 @@
 
     <div class="container text-center">
         <h1 class="my-4">Jawaban Matrikulasi</h1>
-        <div class="pdf-container embed-responsive embed-responsive-16by9">
-            <embed id="pdf-embed" class="embed-responsive-item" src="tests.pdf" type="application/pdf">
+        <div id="pdf-viewer" class="pdf-container">
+            <!-- PDF canvas will be appended here -->
         </div>
         <div id="fallback-link">
             <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
-            <p>If the PDF does not load, you can <a href="tests.pdf" download>download the PDF here</a>.</p>
         </div>
     </div>
 
@@ -52,56 +56,49 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Custom JS for PDF handling -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var pdfEmbed = document.getElementById('pdf-embed');
-            pdfEmbed.onerror = function() {
-                document.getElementById('pdf-error').style.display = 'block';
-            };
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.min.js" type="module"></script>
+    <script type="module">
+        import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.min.js';
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.worker.min.js';
+
+        const url = 'tests.pdf';
+
+        const loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(pdf => {
+            pdf.getPage(1).then(page => {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale: scale });
+
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                document.getElementById('pdf-viewer').appendChild(canvas);
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                page.render(renderContext);
+            });
+        }).catch(error => {
+            console.error('Error loading PDF:', error);
+            document.getElementById('pdf-error').style.display = 'block';
         });
     </script>
-    
+
+    <footer class="text-center mt-4">
+        <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">
+            <img alt="Creative Commons License" style="border-width:0" src="https://licensebuttons.net/l/by-sa/4.0/88x31.png" />
+        </a>
+        <br />
+        <p>
+            This work is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+        </p>
+    </footer>
+
 </body>
-<footer class="text-center mt-4">
-    <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">
-        <img alt="Creative Commons License" style="border-width:0" src="https://licensebuttons.net/l/by-sa/4.0/88x31.png" />
-    </a>
-    <br />
-    <p>
-        This work is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
-    </p>
-</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.min.js"></script>
-<script>
-    var url = 'tests.pdf';
-    var pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.worker.min.js';
-
-    var loadingTask = pdfjsLib.getDocument(url);
-    loadingTask.promise.then(function(pdf) {
-        pdf.getPage(1).then(function(page) {
-            var scale = 1.5;
-            var viewport = page.getViewport({ scale: scale });
-
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            document.getElementById('pdf-viewer').appendChild(canvas);
-
-            var renderContext = {
-                canvasContext: context,
-                viewport: viewport
-            };
-            page.render(renderContext);
-        });
-    }).catch(function(error) {
-        console.error(error);
-        document.getElementById('fallback-link').style.display = 'block';
-    });
-</script>
-
 </html>
