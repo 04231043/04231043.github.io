@@ -17,12 +17,33 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
         }
         .pdf-container {
             border: 1px solid #dee2e6;
             background-color: #fff;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 10px;
+            position: relative;
+        }
+        #pdf-viewer {
+            width: 100%;
+            height: 600px;
+            overflow: auto;
+            border: 1px solid #dee2e6;
+            background-color: #fff;
+        }
+        .page {
+            width: 100%;
+            border-bottom: 1px solid #dee2e6;
             margin-bottom: 10px;
+        }
+        #pdf-controls {
+            margin-top: 10px;
         }
         #fallback-link {
             margin-top: 10px;
@@ -32,20 +53,16 @@
             display: none;
             color: red;
         }
-        #pdf-viewer {
-            width: 100%;
-            height: 600px;
-            border: 1px solid #dee2e6;
-            background-color: #fff;
-        }
     </style>
 </head>
 <body>
 
-    <div class="container text-center">
+    <div class="container">
         <h1 class="my-4">Jawaban Matrikulasi</h1>
-        <div class="pdf-container">
-            <div id="pdf-viewer"></div>
+        <div id="pdf-viewer"></div>
+        <div id="pdf-controls">
+            <button id="prev-page" class="btn btn-primary">Previous Page</button>
+            <button id="next-page" class="btn btn-primary">Next Page</button>
         </div>
         <div id="fallback-link">
             <p id="pdf-error">The PDF failed to load. You can <a href="tests.pdf" download>download the PDF here</a>.</p>
@@ -65,9 +82,11 @@
         var pdfjsLib = window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.worker.min.js';
 
-        var loadingTask = pdfjsLib.getDocument(url);
-        loadingTask.promise.then(function(pdf) {
-            pdf.getPage(1).then(function(page) {
+        var pdfViewer = document.getElementById('pdf-viewer');
+        var pdfDoc = null;
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(function(page) {
                 var scale = 1.5;
                 var viewport = page.getViewport({ scale: scale });
 
@@ -76,7 +95,10 @@
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                document.getElementById('pdf-viewer').appendChild(canvas);
+                var pageDiv = document.createElement('div');
+                pageDiv.className = 'page';
+                pageDiv.appendChild(canvas);
+                pdfViewer.appendChild(pageDiv);
 
                 var renderContext = {
                     canvasContext: context,
@@ -84,12 +106,39 @@
                 };
                 page.render(renderContext);
             });
-        }).catch(function(error) {
-            console.error(error);
-            document.getElementById('fallback-link').style.display = 'block';
+        }
+
+        function loadPDF() {
+            var loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(function(pdf) {
+                pdfDoc = pdf;
+                pdfViewer.innerHTML = '';
+                for (var i = 1; i <= pdf.numPages; i++) {
+                    renderPage(i);
+                }
+            }).catch(function(error) {
+                console.error(error);
+                document.getElementById('pdf-error').style.display = 'block';
+            });
+        }
+
+        document.getElementById('prev-page').addEventListener('click', function() {
+            if (pageNumber > 1) {
+                pageNumber--;
+                loadPDF();
+            }
         });
+
+        document.getElementById('next-page').addEventListener('click', function() {
+            if (pageNumber < pdfDoc.numPages) {
+                pageNumber++;
+                loadPDF();
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", loadPDF);
     </script>
-    
+
 </body>
 <footer class="text-center mt-4">
     <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">
