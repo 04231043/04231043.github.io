@@ -79,9 +79,11 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             var pdfIframe = document.getElementById('pdf-iframe');
+            
             pdfIframe.onload = function() {
                 document.getElementById('pdf-error').style.display = 'none';
             };
+            
             pdfIframe.onerror = function() {
                 document.getElementById('pdf-error').style.display = 'block';
             };
